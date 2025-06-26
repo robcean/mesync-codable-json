@@ -8,7 +8,7 @@
 import Foundation
 
 // MARK: - Task Model
-struct TaskModel: Codable, Identifiable {
+struct TaskModel: Codable, Identifiable, Equatable {
     let id: UUID
     var name: String
     var taskDescription: String
@@ -47,7 +47,7 @@ struct TaskModel: Codable, Identifiable {
 }
 
 // MARK: - Habit Model
-struct HabitModel: Codable, Identifiable {
+struct HabitModel: Codable, Identifiable, Equatable {
     let id: UUID
     var name: String
     var habitDescription: String
@@ -101,7 +101,7 @@ struct HabitModel: Codable, Identifiable {
 }
 
 // MARK: - Habit Instance Model (for tracking completion)
-struct HabitInstanceModel: Codable, Identifiable {
+struct HabitInstanceModel: Codable, Identifiable, Equatable {
     let id: UUID
     let habitId: UUID
     let scheduledDate: Date
@@ -127,7 +127,7 @@ struct HabitInstanceModel: Codable, Identifiable {
 }
 
 // MARK: - Medication Model
-struct MedicationModel: Codable, Identifiable {
+struct MedicationModel: Codable, Identifiable, Equatable {
     let id: UUID
     var name: String
     var dosage: String
@@ -153,7 +153,26 @@ struct MedicationModel: Codable, Identifiable {
     }
 }
 
-// MARK: - Enums (ya existen, pero los incluimos para completitud)
-extension TaskPriority: Codable {}
-extension HabitFrequency: Codable {}
-extension MedicationFrequency: Codable {}
+// MARK: - Supporting Enums
+enum TaskPriority: String, CaseIterable, Codable {
+    case low = "Low"
+    case medium = "Medium"
+    case high = "High"
+    case urgent = "Urgent"
+}
+
+enum HabitFrequency: String, CaseIterable, Codable {
+    case noRepetition = "No repetition"
+    case daily = "Daily"
+    case weekly = "Weekly"
+    case monthly = "Monthly"
+    case custom = "Custom"
+}
+
+enum MedicationFrequency: String, CaseIterable, Codable {
+    case daily = "Daily"
+    case twiceDaily = "Twice Daily"
+    case threeTimesDaily = "Three Times Daily"
+    case weekly = "Weekly"
+    case asNeeded = "As Needed"
+}
