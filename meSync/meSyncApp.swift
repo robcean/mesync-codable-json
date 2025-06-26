@@ -6,31 +6,15 @@
 //
 
 import SwiftUI
-import SwiftData
 
 @main
 struct meSyncApp: App {
-    var sharedModelContainer: ModelContainer = {
-        let schema = Schema([
-            TaskData.self,
-            HabitData.self,
-        ])
-        
-        // Por ahora usamos memoria para que funcione
-        // TODO: Habilitar persistencia después de resolver problemas de migración
-        let modelConfiguration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: true)
-
-        do {
-            return try ModelContainer(for: schema, configurations: [modelConfiguration])
-        } catch {
-            fatalError("Could not create ModelContainer: \(error)")
-        }
-    }()
-
+    @StateObject private var dataManager = DataManager.shared
+    
     var body: some Scene {
         WindowGroup {
             ContentView()
+                .environmentObject(dataManager)
         }
-        .modelContainer(sharedModelContainer)
     }
 }

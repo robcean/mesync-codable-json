@@ -9,6 +9,7 @@ import SwiftUI
 
 struct HomeView: View {
     @Binding var quickAddState: QuickAddState
+    @EnvironmentObject var dataManager: DataManager
     @State private var taskFormCounter = 0
     @State private var habitFormCounter = 0
     
@@ -222,4 +223,5 @@ struct HomeView: View {
 #Preview {
     @Previewable @State var quickAddState: QuickAddState = .hidden
     return HomeView(quickAddState: $quickAddState)
+        .environmentObject(DataManager.shared)
 } 

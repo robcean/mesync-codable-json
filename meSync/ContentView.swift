@@ -8,10 +8,12 @@
 import SwiftUI
 
 struct ContentView: View {
+    @EnvironmentObject var dataManager: DataManager
     @State private var quickAddState: QuickAddState = .hidden
     
     var body: some View {
         HomeView(quickAddState: $quickAddState)
+            .environmentObject(dataManager)
     }
 }
 
@@ -63,4 +65,5 @@ struct TabBarButton: View {
 
 #Preview {
     ContentView()
+        .environmentObject(DataManager.shared)
 }

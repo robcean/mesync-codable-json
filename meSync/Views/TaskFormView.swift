@@ -1,50 +1,55 @@
 //
-//  TaskFormView.swift
+//  TaskFormViewMigrated.swift
 //  meSync
 //
-//  Formulario reutilizable para crear y editar tareas
+//  Formulario reutilizable para crear y editar tareas (versión migrada)
 //
 
 import SwiftUI
-import SwiftData
 
 struct TaskFormView: View {
     @Binding var quickAddState: QuickAddState
-    @Environment(\.modelContext) private var modelContext
+    @EnvironmentObject var dataManager: DataManager
     
     // Form data
-    @State private var taskData: TaskData
-    @State private var selectedPriority: TaskPriority
+    @State private var name: String = ""
+    @State private var taskDescription: String = ""
+    @State private var selectedPriority: TaskPriority = .medium
+    @State private var dueDate: Date = Date()
     
     // UI State
     @FocusState private var isNameFocused: Bool
     @FocusState private var isDescriptionFocused: Bool
     
+    // Editing task reference
+    private let editingTask: TaskModel?
+    
     // Computed properties
     private var isEditing: Bool {
-        quickAddState.isEditing
+        editingTask != nil
     }
     
     private var formTitle: String {
-        quickAddState.formTitle
+        isEditing ? "Editing Task" : "Creating Task"
     }
     
-    private var shouldShowDeleteButton: Bool {
-        isEditing || !taskData.name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+    private var canSave: Bool {
+        !name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
     }
     
     // MARK: - Initializer
     init(quickAddState: Binding<QuickAddState>) {
         self._quickAddState = quickAddState
         
-        // Extract editing task data if available
-        if case .taskForm(let editingTask) = quickAddState.wrappedValue,
-           let task = editingTask {
-            self._taskData = State(initialValue: task)
-            self._selectedPriority = State(initialValue: task.priority)
+        // Extract editing task if available
+        if case .taskForm(let task) = quickAddState.wrappedValue {
+            self.editingTask = task
+            self._name = State(initialValue: task?.name ?? "")
+            self._taskDescription = State(initialValue: task?.taskDescription ?? "")
+            self._selectedPriority = State(initialValue: task?.priority ?? .medium)
+            self._dueDate = State(initialValue: task?.dueDate ?? Date())
         } else {
-            self._taskData = State(initialValue: TaskData())
-            self._selectedPriority = State(initialValue: .medium)
+            self.editingTask = nil
         }
     }
     
@@ -55,78 +60,125 @@ struct TaskFormView: View {
             
             // Form Content
             ScrollView {
-                VStack(spacing: AppSpacing.xl) {
-                    formFields
-                    prioritySection
-                    dateTimeSection
+                VStack(spacing: AppSpacing.lg) {
+                    // Name Field
+                    nameField
                     
-                    Spacer(minLength: AppSpacing.xxxl)
+                    // Description Field
+                    descriptionField
+                    
+                    // Due Date
+                    dueDateField
+                    
+                    // Priority Selection
+                    prioritySection
                 }
-                .standardPadding()
+                .standardHorizontalPadding()
+                .padding(.vertical, AppSpacing.lg)
             }
             
             // Action Buttons
-            actionButtons
+            if isEditing {
+                deleteButton
+            }
         }
+        .background(AppColors.background)
         .onAppear {
-            // Always sync priority on appear
-            selectedPriority = taskData.priority
-            
             // Focus on name field when form appears
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
                 isNameFocused = true
             }
         }
-        .onChange(of: selectedPriority) { oldValue, newValue in
-            taskData.priority = newValue
-        }
     }
     
-    // MARK: - Form Header
+    // MARK: - Header
     private var formHeader: some View {
         HStack {
-            Text(formTitle)
-                .sectionTitleStyle()
+            Button("Cancel") {
+                withAnimation(.easeInOut(duration: 0.3)) {
+                    quickAddState.cancel()
+                }
+            }
+            .captionStyle()
+            .foregroundStyle(AppColors.secondaryText)
             
             Spacer()
+            
+            Text(formTitle)
+                .subtitleStyle()
+                .foregroundStyle(AppColors.primaryText)
+            
+            Spacer()
+            
+            Button("Save") {
+                saveTask()
+            }
+            .captionStyle()
+            .foregroundStyle(canSave ? AppColors.primary : AppColors.tertiaryText)
+            .disabled(!canSave)
         }
-        .headerContainerStyle()
+        .standardHorizontalPadding()
+        .padding(.vertical, AppSpacing.md)
+        .background(AppColors.cardBackground)
+        .overlay(
+            Rectangle()
+                .frame(height: 1)
+                .foregroundStyle(AppColors.secondaryText.opacity(0.2)),
+            alignment: .bottom
+        )
     }
     
     // MARK: - Form Fields
-    private var formFields: some View {
-        VStack(spacing: AppSpacing.lg) {
-            // Name Field
-            VStack(alignment: .leading, spacing: AppSpacing.sm) {
-                Text("Name")
-                    .subtitleStyle()
-                
-                TextField("Enter task name", text: $taskData.name)
-                    .textFieldStyle(.roundedBorder)
-                    .focused($isNameFocused)
-            }
+    private var nameField: some View {
+        VStack(alignment: .leading, spacing: AppSpacing.sm) {
+            Text("Name")
+                .captionStyle()
+                .foregroundStyle(AppColors.secondaryText)
             
-            // Description Field
-            VStack(alignment: .leading, spacing: AppSpacing.sm) {
-                Text("Description")
-                    .subtitleStyle()
-                
-                TextEditor(text: $taskData.taskDescription)
-                    .frame(minHeight: 80)
-                    .padding(AppSpacing.sm)
-                    .background(AppColors.cardBackground, in: RoundedRectangle(cornerRadius: AppSpacing.cornerRadius))
-                    .focused($isDescriptionFocused)
-            }
+            TextField("Enter task name", text: $name)
+                .textFieldStyle(.roundedBorder)
+                .focused($isNameFocused)
         }
     }
     
-    // MARK: - Priority Section
+    private var descriptionField: some View {
+        VStack(alignment: .leading, spacing: AppSpacing.sm) {
+            Text("Description")
+                .captionStyle()
+                .foregroundStyle(AppColors.secondaryText)
+            
+            TextEditor(text: $taskDescription)
+                .focused($isDescriptionFocused)
+                .frame(minHeight: 80)
+                .padding(AppSpacing.sm)
+                .background(AppColors.cardBackground, in: RoundedRectangle(cornerRadius: 8))
+                .overlay(
+                    RoundedRectangle(cornerRadius: 8)
+                        .stroke(AppColors.secondaryText.opacity(0.3), lineWidth: 1)
+                )
+        }
+    }
+    
+    private var dueDateField: some View {
+        VStack(alignment: .leading, spacing: AppSpacing.sm) {
+            Text("Due Date")
+                .captionStyle()
+                .foregroundStyle(AppColors.secondaryText)
+            
+            DatePicker("Select date and time", 
+                      selection: $dueDate,
+                      displayedComponents: [.date, .hourAndMinute])
+                .datePickerStyle(.compact)
+        }
+    }
+    
     private var prioritySection: some View {
         VStack(alignment: .leading, spacing: AppSpacing.sm) {
             Text("Priority")
-                .subtitleStyle()
+                .captionStyle()
+                .foregroundStyle(AppColors.secondaryText)
             
-            HStack(spacing: AppSpacing.md) {
+            VStack(spacing: AppSpacing.xs) {
                 ForEach(TaskPriority.allCases, id: \.self) { priority in
                     priorityButton(for: priority)
                 }
@@ -135,137 +187,103 @@ struct TaskFormView: View {
     }
     
     private func priorityButton(for priority: TaskPriority) -> some View {
-        Button {
+        Button(action: {
             withAnimation(.easeInOut(duration: 0.2)) {
                 selectedPriority = priority
             }
-        } label: {
-            Text(priority.rawValue)
-                .font(AppTypography.caption)
-                .fontWeight(.medium)
-                .foregroundStyle(selectedPriority == priority ? .white : AppColors.primaryText)
-                .padding(.horizontal, AppSpacing.md)
-                .padding(.vertical, AppSpacing.sm)
-                .background(
-                    selectedPriority == priority ? AppColors.primary : AppColors.cardBackground,
-                    in: RoundedRectangle(cornerRadius: AppSpacing.cornerRadius)
-                )
+        }) {
+            HStack {
+                Image(systemName: selectedPriority == priority ? "checkmark.circle.fill" : "circle")
+                    .foregroundStyle(selectedPriority == priority ? priorityColor(for: priority) : AppColors.tertiaryText)
+                
+                Text(priority.rawValue)
+                    .font(AppTypography.body)
+                    .foregroundStyle(AppColors.primaryText)
+                
+                Spacer()
+                
+                Circle()
+                    .fill(priorityColor(for: priority))
+                    .frame(width: 12, height: 12)
+            }
+            .padding(AppSpacing.md)
+            .background(
+                selectedPriority == priority ? priorityColor(for: priority).opacity(0.1) : AppColors.cardBackground,
+                in: RoundedRectangle(cornerRadius: AppSpacing.cardCornerRadius)
+            )
+            .overlay(
+                RoundedRectangle(cornerRadius: AppSpacing.cardCornerRadius)
+                    .stroke(
+                        selectedPriority == priority ? priorityColor(for: priority).opacity(0.3) : AppColors.secondaryText.opacity(0.2),
+                        lineWidth: 1
+                    )
+            )
         }
         .pressableStyle()
     }
     
-    // MARK: - Date Time Section
-    private var dateTimeSection: some View {
-        VStack(alignment: .leading, spacing: AppSpacing.sm) {
-            Text("Date and Time")
-                .subtitleStyle()
-            
-            DatePicker(
-                "Due Date",
-                selection: $taskData.dueDate,
-                displayedComponents: [.date, .hourAndMinute]
-            )
-            .datePickerStyle(.compact)
+    private func priorityColor(for priority: TaskPriority) -> Color {
+        switch priority {
+        case .low: return .green
+        case .medium: return .orange
+        case .high: return .red
+        case .urgent: return .purple
         }
     }
     
-    // MARK: - Action Buttons
-    private var actionButtons: some View {
-        VStack(spacing: AppSpacing.md) {
-            HStack(spacing: AppSpacing.md) {
-                // Cancel Button
-                Button("Cancel") {
-                    cancelAction()
-                }
-                .secondaryActionButtonStyle()
-                .pressableStyle()
-                
-                // Save Button
-                Button("Save") {
-                    saveAction()
-                }
-                .primaryActionButtonStyle()
-                .pressableStyle()
+    // MARK: - Delete Button
+    private var deleteButton: some View {
+        VStack(spacing: AppSpacing.sm) {
+            Button("Delete Task") {
+                deleteTask()
             }
-            
-            // Delete Button (conditional)
-            if shouldShowDeleteButton {
-                Button("Delete") {
-                    deleteAction()
-                }
-                .destructiveButtonStyle()
-                .pressableStyle()
-            }
+            .frame(maxWidth: .infinity)
+            .padding(.vertical, AppSpacing.md)
+            .background(Color.red.opacity(0.1), in: RoundedRectangle(cornerRadius: AppSpacing.cardCornerRadius))
+            .foregroundStyle(.red)
+            .pressableStyle()
         }
-        .standardPadding()
-        .background(AppColors.headerMaterial)
+        .standardHorizontalPadding()
+        .padding(.vertical, AppSpacing.lg)
+        .background(AppColors.cardBackground)
+        .overlay(
+            Rectangle()
+                .frame(height: 1)
+                .foregroundStyle(AppColors.secondaryText.opacity(0.2)),
+            alignment: .top
+        )
     }
     
     // MARK: - Actions
-    private func cancelAction() {
-        // Dismiss keyboard
-        isNameFocused = false
-        isDescriptionFocused = false
+    private func saveTask() {
+        guard canSave else { return }
         
-        withAnimation(.easeInOut(duration: 0.3)) {
-            quickAddState.cancel()
-        }
-    }
-    
-    private func saveAction() {
-        // Validate required fields
-        guard !taskData.name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
-            // TODO: Show validation error
-            return
-        }
+        let task = TaskModel(
+            id: editingTask?.id ?? UUID(),
+            name: name,
+            taskDescription: taskDescription,
+            priority: selectedPriority,
+            dueDate: dueDate,
+            isCompleted: editingTask?.isCompleted ?? false,
+            isSkipped: editingTask?.isSkipped ?? false,
+            completedAt: editingTask?.completedAt,
+            skippedAt: editingTask?.skippedAt
+        )
         
-        // Dismiss keyboard
-        isNameFocused = false
-        isDescriptionFocused = false
+        dataManager.saveTask(task)
         
-        // Save to SwiftData
-        if isEditing {
-            // Update existing task - the taskData is already being modified
-            // SwiftData will automatically track changes
-        } else {
-            // Create new task
-            let newTask = TaskData(
-                name: taskData.name.trimmingCharacters(in: .whitespacesAndNewlines),
-                taskDescription: taskData.taskDescription,
-                priority: taskData.priority,
-                dueDate: taskData.dueDate
-            )
-            modelContext.insert(newTask)
-        }
-        
-        // Save context
-        do {
-            try modelContext.save()
-        } catch {
-            print("Error saving task: \(error)")
-            // TODO: Show error alert
-        }
-        
+        // Close form
         withAnimation(.easeInOut(duration: 0.3)) {
             quickAddState.hide()
         }
     }
     
-    private func deleteAction() {
-        guard isEditing else { return }
+    private func deleteTask() {
+        guard let task = editingTask else { return }
         
-        // Delete from SwiftData
-        modelContext.delete(taskData)
+        dataManager.deleteTask(task)
         
-        // Save context
-        do {
-            try modelContext.save()
-            print("Task deleted successfully")
-        } catch {
-            print("Error deleting task: \(error)")
-            // TODO: Show error alert
-        }
-        
+        // Close form
         withAnimation(.easeInOut(duration: 0.3)) {
             quickAddState.hide()
         }
@@ -273,19 +291,9 @@ struct TaskFormView: View {
 }
 
 // MARK: - Preview
-#Preview("Creating Task") {
+#Preview {
     @Previewable @State var quickAddState: QuickAddState = .taskForm()
     
-    return TaskFormView(quickAddState: $quickAddState)
+    TaskFormView(quickAddState: $quickAddState)
+        .environmentObject(DataManager.shared)
 }
-
-#Preview("Editing Task") {
-    @Previewable @State var quickAddState: QuickAddState = .taskForm(editingTask: TaskData(
-        name: "Sample Task",
-        taskDescription: "This is a sample task for testing the edit functionality.",
-        priority: .high,
-        dueDate: Date().addingTimeInterval(3600)
-    ))
-    
-    return TaskFormView(quickAddState: $quickAddState)
-} 
