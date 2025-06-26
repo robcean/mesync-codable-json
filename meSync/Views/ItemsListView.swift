@@ -37,7 +37,8 @@ class HabitInstance: ItemProtocol, ObservableObject {
         // Create a consistent UUID for this specific instance
         let dateString = ISO8601DateFormatter().string(from: date)
         let combinedString = "\(habit.id.uuidString)_\(dateString)"
-        self.id = UUID(namespace: UUID(), name: combinedString)
+        // Use a deterministic UUID based on the string
+        self.id = UUID(uuidString: combinedString.data(using: .utf8)!.base64EncodedString()) ?? UUID()
         
         self.name = habit.name
         self.itemDescription = habit.habitDescription

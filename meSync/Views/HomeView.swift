@@ -86,15 +86,12 @@ struct HomeView: View {
                 ))
             
         case .habitForm(let editingHabit):
-            // TODO: Migrate HabitFormView
-            Text("Habit Form - Coming Soon")
-                .padding()
-            // HabitFormView(quickAddState: $quickAddState)
-            //     .id("habitForm-\(editingHabit?.id.uuidString ?? "new-\(habitFormCounter)")")
-            //     .transition(.asymmetric(
-            //         insertion: .move(edge: .trailing).combined(with: .opacity),
-            //         removal: .move(edge: .leading).combined(with: .opacity)
-            //     ))
+            HabitFormView(quickAddState: $quickAddState)
+                .id("habitForm-\(editingHabit?.id.uuidString ?? "new-\(habitFormCounter)")")
+                .transition(.asymmetric(
+                    insertion: .move(edge: .trailing).combined(with: .opacity),
+                    removal: .move(edge: .leading).combined(with: .opacity)
+                ))
             
         case .medicationForm:
             placeholderFormView(title: "Creating Medication")

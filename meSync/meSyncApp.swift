@@ -9,13 +9,12 @@ import SwiftUI
 
 @main
 struct meSyncApp: App {
-    // @StateObject private var dataManager = DataManager.shared
+    @StateObject private var dataManager = DataManager.shared
     
     var body: some Scene {
         WindowGroup {
-            MinimalContentView()
-            // ContentView()
-            //     .environmentObject(dataManager)
+            ContentView()
+                .environmentObject(dataManager)
         }
     }
 }

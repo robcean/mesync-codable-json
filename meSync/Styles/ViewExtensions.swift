@@ -104,6 +104,19 @@ extension View {
     }
 }
 
+// MARK: - Card Styles
+extension View {
+    func itemCardStyle() -> some View {
+        self
+            .padding(AppSpacing.md)
+            .background(AppColors.cardBackground, in: RoundedRectangle(cornerRadius: AppSpacing.cardCornerRadius))
+            .overlay(
+                RoundedRectangle(cornerRadius: AppSpacing.cardCornerRadius)
+                    .stroke(AppColors.secondaryText.opacity(0.1), lineWidth: 1)
+            )
+    }
+}
+
 // MARK: - Layout Helpers
 extension View {
     
