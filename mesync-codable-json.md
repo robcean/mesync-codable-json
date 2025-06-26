@@ -147,7 +147,8 @@ Archivos:
 ### GitHub
 - Repositorio: https://github.com/robcean/mesync-codable-json
 - Branch: main
-- Último commit funcional: 0e5c9c8
+- **USAR ESTE COMMIT**: `2f61a5d` (Fix project to compile without Xcode freezing)
+- ❌ NO usar: `f700f13` o `0e5c9c8` (causan problemas)
 
 ### Arquitectura
 - **NO usar SwiftData** - Causó muchos problemas
