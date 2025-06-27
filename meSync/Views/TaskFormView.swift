@@ -55,12 +55,15 @@ struct TaskFormView: View {
     
     var body: some View {
         VStack(spacing: 0) {
-            // Header
-            formHeader
-            
             // Form Content
             ScrollView {
-                VStack(spacing: AppSpacing.lg) {
+                VStack(spacing: AppSpacing.xs) {
+                    // Form Title
+                    Text(isEditing ? "Edit Task" : "Create New Task")
+                        .sectionTitleStyle()
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .padding(.bottom, AppSpacing.sm)
+                    
                     // Name Field
                     nameField
                     
@@ -73,16 +76,13 @@ struct TaskFormView: View {
                     // Priority Selection
                     prioritySection
                 }
-                .standardHorizontalPadding()
-                .padding(.vertical, AppSpacing.lg)
+                .padding(.top, AppSpacing.md)
             }
             
             // Action Buttons
-            if isEditing {
-                deleteButton
-            }
+            actionButtons
         }
-        .background(AppColors.background)
+        .formContainerStyle()
         .onAppear {
             // Focus on name field when form appears
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
@@ -91,98 +91,58 @@ struct TaskFormView: View {
         }
     }
     
-    // MARK: - Header
-    private var formHeader: some View {
-        HStack {
-            Button("Cancel") {
-                withAnimation(.easeInOut(duration: 0.3)) {
-                    quickAddState.cancel()
-                }
-            }
-            .captionStyle()
-            .foregroundStyle(AppColors.secondaryText)
-            
-            Spacer()
-            
-            Text(formTitle)
-                .subtitleStyle()
-                .foregroundStyle(AppColors.primaryText)
-            
-            Spacer()
-            
-            Button("Save") {
-                saveTask()
-            }
-            .captionStyle()
-            .foregroundStyle(canSave ? AppColors.primary : AppColors.tertiaryText)
-            .disabled(!canSave)
-        }
-        .standardHorizontalPadding()
-        .padding(.vertical, AppSpacing.md)
-        .background(AppColors.cardBackground)
-        .overlay(
-            Rectangle()
-                .frame(height: AppDimensions.dividerHeight)
-                .foregroundStyle(AppColors.secondaryText.opacity(0.2)),
-            alignment: .bottom
-        )
-    }
-    
     // MARK: - Form Fields
     private var nameField: some View {
         VStack(alignment: .leading, spacing: AppSpacing.sm) {
             Text("Name")
-                .captionStyle()
-                .foregroundStyle(AppColors.secondaryText)
+                .formLabelStyle()
+                .foregroundStyle(AppColors.primaryText)
             
             TextField("Enter task name", text: $name)
-                .textFieldStyle(.roundedBorder)
                 .focused($isNameFocused)
+                .formInputStyle()
         }
+        .formSectionStyle()
     }
     
     private var descriptionField: some View {
         VStack(alignment: .leading, spacing: AppSpacing.sm) {
             Text("Description")
-                .captionStyle()
-                .foregroundStyle(AppColors.secondaryText)
+                .formLabelStyle()
+                .foregroundStyle(AppColors.primaryText)
             
-            TextEditor(text: $taskDescription)
-                .focused($isDescriptionFocused)
-                .frame(minHeight: AppDimensions.minTextEditorHeight)
-                .padding(AppSpacing.sm)
-                .background(AppColors.cardBackground, in: RoundedRectangle(cornerRadius: AppSpacing.mediumCornerRadius))
-                .overlay(
-                    RoundedRectangle(cornerRadius: AppSpacing.mediumCornerRadius)
-                        .stroke(AppColors.secondaryText.opacity(0.3), lineWidth: 1)
-                )
+            DynamicHeightTextEditor(text: $taskDescription, placeholder: "Add task description...")
         }
+        .formSectionStyle()
     }
     
     private var dueDateField: some View {
         VStack(alignment: .leading, spacing: AppSpacing.sm) {
             Text("Due Date")
-                .captionStyle()
-                .foregroundStyle(AppColors.secondaryText)
+                .formLabelStyle()
+                .foregroundStyle(AppColors.primaryText)
             
-            CompactDatePicker(
-                title: "Date",
-                date: $dueDate,
-                components: .date
-            )
-            
-            CompactTimePicker(
-                title: "Time",
-                time: $dueDate
-            )
+            VStack(spacing: AppSpacing.sm) {
+                CompactDatePicker(
+                    title: "Date",
+                    date: $dueDate,
+                    components: .date
+                )
+                
+                CompactTimePicker(
+                    title: "Time",
+                    time: $dueDate
+                )
+            }
         }
+        .formSectionStyle()
     }
     
     private var prioritySection: some View {
         VStack(alignment: .leading, spacing: AppSpacing.sm) {
             Text("Priority")
-                .captionStyle()
-                .foregroundStyle(AppColors.secondaryText)
+                .formLabelStyle()
+                .foregroundStyle(AppColors.primaryText)
             
             VStack(spacing: AppSpacing.xs) {
                 ForEach(TaskPriority.allCases, id: \.self) { priority in
@@ -190,6 +150,7 @@ struct TaskFormView: View {
                 }
             }
         }
+        .formSectionStyle()
     }
     
     private func priorityButton(for priority: TaskPriority) -> some View {
@@ -215,6 +176,10 @@ struct TaskFormView: View {
         .buttonStyle(.plain)
         .padding(.horizontal, AppSpacing.md)
         .padding(.vertical, AppSpacing.sm)
+        .background(
+            RoundedRectangle(cornerRadius: AppSpacing.cornerRadius)
+                .fill(selectedPriority == priority ? AppColors.primary.opacity(0.1) : Color.clear)
+        )
     }
     
     private func priorityColor(for priority: TaskPriority) -> Color {
@@ -226,15 +191,38 @@ struct TaskFormView: View {
         }
     }
     
-    // MARK: - Delete Button
-    private var deleteButton: some View {
+    // MARK: - Action Buttons
+    private var actionButtons: some View {
         VStack(spacing: AppSpacing.sm) {
-            Button("Delete Task", role: .destructive) {
-                deleteTask()
+            // Cancel and Save buttons
+            HStack(spacing: AppSpacing.md) {
+                Button("Cancel") {
+                    withAnimation(.easeInOut(duration: 0.3)) {
+                        quickAddState.cancel()
+                    }
+                }
+                .buttonStyle(.bordered)
+                .controlSize(.large)
+                .frame(maxWidth: .infinity)
+                
+                Button("Save") {
+                    saveTask()
+                }
+                .buttonStyle(.borderedProminent)
+                .controlSize(.large)
+                .frame(maxWidth: .infinity)
+                .disabled(!canSave)
             }
-            .buttonStyle(.borderedProminent)
-            .controlSize(.large)
-            .frame(maxWidth: .infinity)
+            
+            // Delete button (only when editing)
+            if isEditing {
+                Button("Delete Task", role: .destructive) {
+                    deleteTask()
+                }
+                .buttonStyle(.borderedProminent)
+                .controlSize(.large)
+                .frame(maxWidth: .infinity)
+            }
         }
         .standardHorizontalPadding()
         .padding(.vertical, AppSpacing.lg)

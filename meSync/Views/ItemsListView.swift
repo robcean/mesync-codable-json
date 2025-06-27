@@ -314,14 +314,30 @@ struct ItemsListView: View {
     }
     
     private var completedAndSkippedItems: [any ItemProtocol] {
-        allItems.filter { $0.isCompleted || $0.isSkipped }
-            .sorted { item1, item2 in
-                // Completed items first, then skipped items
-                if item1.isCompleted != item2.isCompleted {
-                    return item1.isCompleted
-                }
-                return item1.scheduledTime < item2.scheduledTime
+        let calendar = Calendar.current
+        let now = Date()
+        let cutoffHour = 2 // 2 AM
+        
+        return allItems.filter { item in
+            guard item.isCompleted || item.isSkipped else { return false }
+            
+            // Get the timestamp when the item was marked as completed/skipped
+            guard let actionTimestamp = item.actionTimestamp else { return true }
+            
+            // Calculate the cutoff time (2 AM the day after the action)
+            let dayAfterAction = calendar.date(byAdding: .day, value: 1, to: actionTimestamp) ?? actionTimestamp
+            let cutoffTime = calendar.date(bySettingHour: cutoffHour, minute: 0, second: 0, of: dayAfterAction) ?? dayAfterAction
+            
+            // Hide the item if current time is past the cutoff time
+            return now < cutoffTime
+        }
+        .sorted { item1, item2 in
+            // Completed items first, then skipped items
+            if item1.isCompleted != item2.isCompleted {
+                return item1.isCompleted
             }
+            return item1.scheduledTime < item2.scheduledTime
+        }
     }
     
     private func shouldHabitOccurOn(habit: HabitModel, date: Date) -> Bool {
@@ -529,7 +545,11 @@ struct ItemCard: View {
     // MARK: - Item Type Indicator
     @ViewBuilder
     private var itemTypeIndicator: some View {
-        if item is HabitInstance {
+        if item is TaskModel {
+            Image(systemName: "checkmark.square")
+                .font(.caption2)
+                .foregroundStyle(AppColors.primary)
+        } else if item is HabitInstance {
             Image(systemName: "repeat")
                 .font(.caption2)
                 .foregroundStyle(AppColors.primary)

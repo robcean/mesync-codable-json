@@ -44,6 +44,13 @@ extension View {
             .font(AppTypography.caption)
             .foregroundStyle(AppColors.tertiaryText)
     }
+    
+    /// Estilo para etiquetas de campos de formulario
+    func formLabelStyle() -> some View {
+        self
+            .font(AppTypography.caption)
+            .foregroundStyle(AppColors.primaryText.opacity(0.8))
+    }
 }
 
 // MARK: - Container Styles
@@ -114,6 +121,31 @@ extension View {
                 RoundedRectangle(cornerRadius: AppSpacing.cardCornerRadius)
                     .stroke(AppColors.secondaryText.opacity(0.1), lineWidth: 1)
             )
+    }
+    
+    /// Estilo para inputs de formulario que coincide con ItemsListView
+    func formInputStyle() -> some View {
+        self
+            .padding(AppSpacing.md)
+            .background(AppColors.cardBackground, in: RoundedRectangle(cornerRadius: AppSpacing.cornerRadius))
+            .overlay(
+                RoundedRectangle(cornerRadius: AppSpacing.cornerRadius)
+                    .stroke(AppColors.primary.opacity(0.3), lineWidth: 1)
+            )
+    }
+    
+    /// Estilo para secciones de formulario
+    func formSectionStyle() -> some View {
+        self
+            .padding(AppSpacing.lg)
+            .background(AppColors.cardBackground, in: RoundedRectangle(cornerRadius: AppSpacing.cardCornerRadius))
+            .standardHorizontalPadding()
+    }
+    
+    /// Estilo para el contenedor principal del formulario
+    func formContainerStyle() -> some View {
+        self
+            .background(AppColors.background)
     }
 }
 
@@ -204,6 +236,10 @@ struct DynamicHeightTextEditor: View {
                 .frame(minHeight: textHeight, maxHeight: textHeight)
         }
         .background(AppColors.cardBackground, in: RoundedRectangle(cornerRadius: AppSpacing.cornerRadius))
+        .overlay(
+            RoundedRectangle(cornerRadius: AppSpacing.cornerRadius)
+                .stroke(AppColors.primary.opacity(0.3), lineWidth: 1)
+        )
     }
 }
 
@@ -238,6 +274,10 @@ struct CompactDatePicker: View {
         }
         .padding(AppSpacing.md)
         .background(AppColors.cardBackground, in: RoundedRectangle(cornerRadius: AppSpacing.cornerRadius))
+        .overlay(
+            RoundedRectangle(cornerRadius: AppSpacing.cornerRadius)
+                .stroke(AppColors.primary.opacity(0.3), lineWidth: 1)
+        )
     }
 }
 
@@ -263,5 +303,9 @@ struct CompactTimePicker: View {
         }
         .padding(AppSpacing.md)
         .background(AppColors.cardBackground, in: RoundedRectangle(cornerRadius: AppSpacing.cornerRadius))
+        .overlay(
+            RoundedRectangle(cornerRadius: AppSpacing.cornerRadius)
+                .stroke(AppColors.primary.opacity(0.3), lineWidth: 1)
+        )
     }
 } 

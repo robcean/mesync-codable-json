@@ -37,12 +37,15 @@ struct MedicationFormView: View {
     
     var body: some View {
         VStack(spacing: 0) {
-            // Header
-            formHeader
-            
             // Form Content
             ScrollView {
-                VStack(spacing: AppSpacing.xl) {
+                VStack(spacing: AppSpacing.xs) {
+                    // Form Title
+                    Text(isEditing ? "Edit Medication" : "Create New Medication")
+                        .sectionTitleStyle()
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .padding(.bottom, AppSpacing.sm)
+                    
                     nameField
                     descriptionField
                     instructionsField
@@ -57,118 +60,125 @@ struct MedicationFormView: View {
             // Action Buttons
             actionButtons
         }
+        .formContainerStyle()
         .onAppear {
             loadFormData()
             isNameFocused = true
         }
     }
     
-    // MARK: - Form Header
-    private var formHeader: some View {
-        HStack {
-            Text(formTitle)
-                .sectionTitleStyle()
-            
-            Spacer()
-        }
-        .headerContainerStyle()
-    }
-    
     // MARK: - Form Fields
     private var nameField: some View {
         VStack(alignment: .leading, spacing: AppSpacing.sm) {
             Text("Name")
-                .subtitleStyle()
+                .formLabelStyle()
+                .foregroundStyle(AppColors.primaryText)
             
             TextField("Enter medication name", text: $name)
-                .textFieldStyle(.roundedBorder)
+                .formInputStyle()
                 .focused($isNameFocused)
         }
+        .formSectionStyle()
     }
     
     private var descriptionField: some View {
         VStack(alignment: .leading, spacing: AppSpacing.sm) {
             Text("Description")
-                .subtitleStyle()
+                .formLabelStyle()
+                .foregroundStyle(AppColors.primaryText)
             
             DynamicHeightTextEditor(
                 text: $medicationDescription,
                 placeholder: "What is this medication for?"
             )
         }
+        .formSectionStyle()
     }
     
     private var instructionsField: some View {
         VStack(alignment: .leading, spacing: AppSpacing.sm) {
             Text("Instructions")
-                .subtitleStyle()
+                .formLabelStyle()
+                .foregroundStyle(AppColors.primaryText)
             
             DynamicHeightTextEditor(
                 text: $instructions,
                 placeholder: "How to take this medication"
             )
         }
+        .formSectionStyle()
     }
     
     // MARK: - Times Per Day Section (Simplified for now)
     private var timesPerDaySection: some View {
         VStack(alignment: .leading, spacing: AppSpacing.sm) {
             Text("Times per day")
-                .subtitleStyle()
+                .formLabelStyle()
+                .foregroundStyle(AppColors.primaryText)
             
             Text("1 time daily")
                 .font(AppTypography.body)
                 .foregroundStyle(AppColors.primaryText)
-                .padding(AppSpacing.md)
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .background(AppColors.cardBackground, in: RoundedRectangle(cornerRadius: AppSpacing.cornerRadius))
+                .formInputStyle()
         }
+        .formSectionStyle()
     }
     
     // MARK: - Reminder Time Section
     private var reminderTimeSection: some View {
         VStack(alignment: .leading, spacing: AppSpacing.sm) {
             Text("Reminder time")
-                .subtitleStyle()
+                .formLabelStyle()
+                .foregroundStyle(AppColors.primaryText)
             
             CompactTimePicker(
                 title: "Time",
                 time: $reminderTime
             )
         }
+        .formSectionStyle()
     }
     
     // MARK: - Action Buttons
     private var actionButtons: some View {
-        VStack(spacing: AppSpacing.md) {
+        VStack(spacing: AppSpacing.sm) {
+            // Cancel and Save buttons
             HStack(spacing: AppSpacing.md) {
-                // Cancel Button
                 Button("Cancel") {
                     cancelAction()
                 }
-                .secondaryActionButtonStyle()
-                .pressableStyle()
+                .buttonStyle(.bordered)
+                .controlSize(.large)
+                .frame(maxWidth: .infinity)
                 
-                // Save Button
                 Button("Save") {
                     saveAction()
                 }
-                .primaryActionButtonStyle()
-                .pressableStyle()
+                .buttonStyle(.borderedProminent)
+                .controlSize(.large)
+                .frame(maxWidth: .infinity)
                 .disabled(!isValidForm)
             }
             
-            // Delete Button (only when editing)
+            // Delete button (only when editing)
             if isEditing {
-                Button("Delete") {
+                Button("Delete Medication", role: .destructive) {
                     deleteAction()
                 }
-                .destructiveButtonStyle()
-                .pressableStyle()
+                .buttonStyle(.borderedProminent)
+                .controlSize(.large)
+                .frame(maxWidth: .infinity)
             }
         }
-        .standardPadding()
-        .background(AppColors.headerMaterial)
+        .standardHorizontalPadding()
+        .padding(.vertical, AppSpacing.lg)
+        .background(AppColors.cardBackground)
+        .overlay(
+            Rectangle()
+                .frame(height: AppDimensions.dividerHeight)
+                .foregroundStyle(AppColors.secondaryText.opacity(0.2)),
+            alignment: .top
+        )
     }
     
     // MARK: - Actions

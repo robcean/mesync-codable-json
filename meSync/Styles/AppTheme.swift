@@ -101,9 +101,9 @@ struct AppIcons {
     static let progress = "chart.line.uptrend.xyaxis"
     
     // Quick Add
-    static let habitCircle = "repeat.circle"
-    static let taskCircle = "checkmark.circle"
-    static let medicationCircle = "pills.circle"
+    static let habitCircle = "repeat.circle.fill"
+    static let taskCircle = "checkmark.circle.fill"
+    static let medicationCircle = "pills.fill"
     
     // Comunes
     static let plus = "plus"

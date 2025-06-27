@@ -299,6 +299,10 @@ struct ProgressItemCard: View {
             cardBackground,
             in: RoundedRectangle(cornerRadius: AppSpacing.cardCornerRadius)
         )
+        .overlay(
+            RoundedRectangle(cornerRadius: AppSpacing.cardCornerRadius)
+                .stroke(borderColor, lineWidth: 2)
+        )
         .onLongPressGesture(minimumDuration: 0.5) {
             if hasDescription {
                 withAnimation(.easeInOut(duration: 0.3)) {
@@ -332,7 +336,11 @@ struct ProgressItemCard: View {
     // MARK: - Item Type Indicator
     @ViewBuilder
     private var itemTypeIndicator: some View {
-        if item is HabitInstance {
+        if item is TaskModel {
+            Image(systemName: "checkmark.square")
+                .font(.caption2)
+                .foregroundStyle(AppColors.primary)
+        } else if item is HabitInstance {
             Image(systemName: "repeat")
                 .font(.caption2)
                 .foregroundStyle(AppColors.primary)
@@ -375,6 +383,16 @@ struct ProgressItemCard: View {
             return AppColors.primaryText.opacity(0.8)
         } else {
             return AppColors.primaryText
+        }
+    }
+    
+    private var borderColor: Color {
+        if item.isCompleted {
+            return Color.green.opacity(0.3)
+        } else if item.isSkipped {
+            return Color.orange.opacity(0.3)
+        } else {
+            return AppColors.primary.opacity(0.3)
         }
     }
 }

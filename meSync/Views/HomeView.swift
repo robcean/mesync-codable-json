@@ -42,11 +42,11 @@ struct HomeView: View {
                         }
                     }
                 case .habit:
-                    placeholderView(title: "Habits", icon: AppIcons.habit)
+                    HabitsView(quickAddState: $quickAddState)
                 case .task:
-                    placeholderView(title: "Tasks", icon: AppIcons.task)
+                    TasksView(quickAddState: $quickAddState)
                 case .medication:
-                    placeholderView(title: "Medications", icon: AppIcons.medication)
+                    MedicationsView(quickAddState: $quickAddState)
                 case .progress:
                     ProgressView(quickAddState: $quickAddState)
                 }
@@ -64,7 +64,7 @@ struct HomeView: View {
         VStack(alignment: .leading, spacing: AppSpacing.xs) {
             HStack {
                 VStack(alignment: .leading, spacing: AppSpacing.xs) {
-                    Text("Today")
+                    Text("meSync")
                         .primaryTitleStyle()
                     
                     Text(currentDateString)
