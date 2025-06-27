@@ -158,4 +158,110 @@ extension View {
     func slowAnimation() -> some View {
         self.animation(.easeInOut(duration: 0.5), value: UUID())
     }
+}
+
+
+// MARK: - Dynamic Height TextEditor
+struct DynamicHeightTextEditor: View {
+    @Binding var text: String
+    let placeholder: String
+    @State private var textHeight: CGFloat = 40
+    
+    var body: some View {
+        ZStack(alignment: .topLeading) {
+            // Placeholder
+            if text.isEmpty {
+                Text(placeholder)
+                    .foregroundStyle(AppColors.tertiaryText)
+                    .padding(.horizontal, AppSpacing.sm + 4)
+                    .padding(.vertical, AppSpacing.sm + 8)
+            }
+            
+            // Invisible text to calculate height
+            Text(text.isEmpty ? " " : text)
+                .font(AppTypography.body)
+                .lineSpacing(4)
+                .padding(.horizontal, AppSpacing.sm + 4)
+                .padding(.vertical, AppSpacing.sm + 8)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .background(GeometryReader { geometry in
+                    Color.clear.preference(
+                        key: TextHeightPreferenceKey.self,
+                        value: geometry.size.height
+                    )
+                })
+                .onPreferenceChange(TextHeightPreferenceKey.self) { height in
+                    textHeight = max(40, height)
+                }
+                .opacity(0) // Make the text invisible
+            
+            // Actual TextEditor
+            TextEditor(text: $text)
+                .font(AppTypography.body)
+                .scrollContentBackground(.hidden)
+                .padding(.horizontal, AppSpacing.xs)
+                .padding(.vertical, AppSpacing.xs)
+                .frame(minHeight: textHeight, maxHeight: textHeight)
+        }
+        .background(AppColors.cardBackground, in: RoundedRectangle(cornerRadius: AppSpacing.cornerRadius))
+    }
+}
+
+struct TextHeightPreferenceKey: PreferenceKey {
+    static var defaultValue: CGFloat = 0
+    static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) {
+        value = max(value, nextValue())
+    }
+}
+
+// MARK: - Compact Date/Time Pickers
+struct CompactDatePicker: View {
+    let title: String
+    @Binding var date: Date
+    let components: DatePickerComponents
+    
+    var body: some View {
+        HStack {
+            Text(title)
+                .font(AppTypography.body)
+                .foregroundStyle(AppColors.secondaryText)
+            
+            Spacer()
+            
+            DatePicker(
+                "",
+                selection: $date,
+                displayedComponents: components
+            )
+            .labelsHidden()
+            .environment(\.locale, Locale(identifier: "en_US"))
+        }
+        .padding(AppSpacing.md)
+        .background(AppColors.cardBackground, in: RoundedRectangle(cornerRadius: AppSpacing.cornerRadius))
+    }
+}
+
+struct CompactTimePicker: View {
+    let title: String
+    @Binding var time: Date
+    
+    var body: some View {
+        HStack {
+            Text(title)
+                .font(AppTypography.body)
+                .foregroundStyle(AppColors.secondaryText)
+            
+            Spacer()
+            
+            DatePicker(
+                "",
+                selection: $time,
+                displayedComponents: .hourAndMinute
+            )
+            .labelsHidden()
+            .environment(\.locale, Locale(identifier: "en_US"))
+        }
+        .padding(AppSpacing.md)
+        .background(AppColors.cardBackground, in: RoundedRectangle(cornerRadius: AppSpacing.cornerRadius))
+    }
 } 

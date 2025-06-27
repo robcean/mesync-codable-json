@@ -16,17 +16,25 @@ struct AppColors {
     // Fondos
     static let background = Color(.systemBackground)
     static let secondaryBackground = Color(.secondarySystemBackground)
-    static let cardBackground = Color(.systemGray6)
+    static let cardBackground = Color(.secondarySystemBackground)
     
     // Textos
     static let primaryText = Color.primary
     static let secondaryText = Color.secondary
     static let tertiaryText = Color(.tertiaryLabel)
+    static let onPrimaryText = Color.white  // Text on primary color backgrounds
+    static let onDarkText = Color.white     // Text on dark backgrounds
     
     // Estados
-    static let success = Color.green
-    static let warning = Color.orange
-    static let error = Color.red
+    static let success = Color(.systemGreen)
+    static let warning = Color(.systemOrange)
+    static let error = Color(.systemRed)
+    
+    // Prioridades de Tareas - usando colores del sistema más sutiles
+    static let taskPriorityLow = Color(.systemGreen)
+    static let taskPriorityMedium = Color(.systemOrange)
+    static let taskPriorityHigh = Color(.systemRed)
+    static let taskPriorityUrgent = Color(.systemPurple)
     
     // Materiales
     static let headerMaterial = Material.regularMaterial
@@ -53,6 +61,11 @@ struct AppSpacing {
     static let cornerRadius: CGFloat = 12
     static let cardCornerRadius: CGFloat = 16
     static let buttonCornerRadius: CGFloat = 10
+    static let smallCornerRadius: CGFloat = 4
+    static let mediumCornerRadius: CGFloat = 8
+    
+    // Espaciados específicos
+    static let habitBadgeSpacing: CGFloat = 4
 }
 
 // MARK: - App Typography
@@ -72,6 +85,10 @@ struct AppTypography {
     static let caption = Font.caption
     static let caption2 = Font.caption2
     static let footnote = Font.footnote
+    
+    // Tamaños específicos
+    static let emptyStateIcon = Font.system(size: 48)
+    static let habitBadgeIcon = Font.system(size: 10)
 }
 
 // MARK: - App Icons
@@ -102,6 +119,8 @@ struct AppDimensions {
     static let headerHeight: CGFloat = 100
     static let tabBarHeight: CGFloat = 80
     static let buttonHeight: CGFloat = 50
+    static let dividerHeight: CGFloat = 1
+    static let minTextEditorHeight: CGFloat = 80
     
     // Anchos
     static let maxContentWidth: CGFloat = 400
@@ -111,4 +130,11 @@ struct AppDimensions {
     static let mediumIcon: CGFloat = 20
     static let largeIcon: CGFloat = 24
     static let xlIcon: CGFloat = 32
+    
+    // Tamaños de botones
+    static let floatingButtonSize: CGFloat = 56
+    static let itemRowButtonSize: CGFloat = 32
+    
+    // Indicadores
+    static let priorityIndicatorSize: CGFloat = 12
 } 

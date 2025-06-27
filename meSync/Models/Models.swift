@@ -126,28 +126,63 @@ struct HabitInstanceModel: Codable, Identifiable, Equatable {
     }
 }
 
+// MARK: - Medication Instance Model (for tracking completion)
+struct MedicationInstanceModel: Codable, Identifiable, Equatable {
+    let id: UUID
+    let medicationId: UUID
+    let scheduledDate: Date
+    let doseNumber: Int
+    var completedAt: Date?
+    var skippedAt: Date?
+    
+    var isCompleted: Bool { completedAt != nil }
+    var isSkipped: Bool { skippedAt != nil }
+    
+    init(
+        id: UUID = UUID(),
+        medicationId: UUID,
+        scheduledDate: Date,
+        doseNumber: Int,
+        completedAt: Date? = nil,
+        skippedAt: Date? = nil
+    ) {
+        self.id = id
+        self.medicationId = medicationId
+        self.scheduledDate = scheduledDate
+        self.doseNumber = doseNumber
+        self.completedAt = completedAt
+        self.skippedAt = skippedAt
+    }
+}
+
 // MARK: - Medication Model
 struct MedicationModel: Codable, Identifiable, Equatable {
     let id: UUID
     var name: String
-    var dosage: String
-    var frequency: MedicationFrequency
+    var medicationDescription: String
+    var instructions: String
+    var timesPerDay: Int
     var reminderTimes: [Date]
+    var unscheduledDoses: [Date]
     var createdAt: Date
     var updatedAt: Date
     
     init(
         id: UUID = UUID(),
         name: String = "",
-        dosage: String = "",
-        frequency: MedicationFrequency = .daily,
-        reminderTimes: [Date] = []
+        medicationDescription: String = "",
+        instructions: String = "",
+        timesPerDay: Int = 1,
+        reminderTimes: [Date] = [Date()],
+        unscheduledDoses: [Date] = []
     ) {
         self.id = id
         self.name = name
-        self.dosage = dosage
-        self.frequency = frequency
-        self.reminderTimes = reminderTimes
+        self.medicationDescription = medicationDescription
+        self.instructions = instructions
+        self.timesPerDay = timesPerDay
+        self.reminderTimes = reminderTimes.isEmpty ? [Date()] : reminderTimes
+        self.unscheduledDoses = unscheduledDoses
         self.createdAt = Date()
         self.updatedAt = Date()
     }
@@ -169,10 +204,3 @@ enum HabitFrequency: String, CaseIterable, Codable {
     case custom = "Custom"
 }
 
-enum MedicationFrequency: String, CaseIterable, Codable {
-    case daily = "Daily"
-    case twiceDaily = "Twice Daily"
-    case threeTimesDaily = "Three Times Daily"
-    case weekly = "Weekly"
-    case asNeeded = "As Needed"
-}

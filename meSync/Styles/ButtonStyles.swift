@@ -32,7 +32,7 @@ struct PrimaryActionButtonStyle: ViewModifier {
     func body(content: Content) -> some View {
         content
             .font(AppTypography.bodyMedium)
-            .foregroundStyle(.white)
+            .foregroundStyle(AppColors.onPrimaryText)
             .padding(.horizontal, AppSpacing.xl)
             .padding(.vertical, AppSpacing.md)
             .background(AppColors.primary, in: RoundedRectangle(cornerRadius: AppSpacing.buttonCornerRadius))
@@ -60,10 +60,9 @@ struct FloatingActionButtonStyle: ViewModifier {
     func body(content: Content) -> some View {
         content
             .font(.system(size: AppDimensions.largeIcon, weight: .medium))
-            .foregroundStyle(.white)
-            .frame(width: 56, height: 56)
+            .foregroundStyle(AppColors.onPrimaryText)
+            .frame(width: AppDimensions.floatingButtonSize, height: AppDimensions.floatingButtonSize)
             .background(AppColors.primary, in: Circle())
-            .shadow(color: AppColors.primary.opacity(0.3), radius: 8, x: 0, y: 4)
     }
 }
 
@@ -72,7 +71,7 @@ struct DestructiveButtonStyle: ViewModifier {
     func body(content: Content) -> some View {
         content
             .font(AppTypography.bodyMedium)
-            .foregroundStyle(.white)
+            .foregroundStyle(AppColors.onPrimaryText)
             .padding(.horizontal, AppSpacing.xl)
             .padding(.vertical, AppSpacing.md)
             .background(AppColors.error, in: RoundedRectangle(cornerRadius: AppSpacing.buttonCornerRadius))

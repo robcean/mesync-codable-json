@@ -11,11 +11,11 @@ struct MinimalContentView: View {
     var body: some View {
         VStack {
             Text("meSync - Testing")
-                .font(.largeTitle)
+                .font(AppTypography.largeTitle)
                 .padding()
             
             Text("App is running!")
-                .foregroundColor(.green)
+                .foregroundStyle(AppColors.secondaryText)
         }
     }
 }

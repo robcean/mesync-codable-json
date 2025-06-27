@@ -12,6 +12,15 @@ struct HomeView: View {
     @EnvironmentObject var dataManager: DataManager
     @State private var taskFormCounter = 0
     @State private var habitFormCounter = 0
+    @State private var selectedTab: Tab = .home
+    
+    enum Tab {
+        case home
+        case habit
+        case task
+        case medication
+        case progress
+    }
     
     var body: some View {
         VStack(spacing: 0) {
@@ -19,14 +28,27 @@ struct HomeView: View {
             headerView
             
             // Contenido central scrollable
-            ScrollView {
-                VStack(spacing: 0) {
-                    // Quick Add Content (cuando esté activo)
-                    quickAddContent
-                    
-                    // Lista de ítems del día
-                    ItemsListView(quickAddState: $quickAddState)
-                        .padding(.top, quickAddState == .hidden ? AppSpacing.sm : AppSpacing.lg)
+            Group {
+                switch selectedTab {
+                case .home:
+                    ScrollView {
+                        VStack(spacing: 0) {
+                            // Quick Add Content (cuando esté activo)
+                            quickAddContent
+                            
+                            // Lista de ítems del día
+                            ItemsListView(quickAddState: $quickAddState)
+                                .padding(.top, quickAddState == .hidden ? AppSpacing.sm : AppSpacing.lg)
+                        }
+                    }
+                case .habit:
+                    placeholderView(title: "Habits", icon: AppIcons.habit)
+                case .task:
+                    placeholderView(title: "Tasks", icon: AppIcons.task)
+                case .medication:
+                    placeholderView(title: "Medications", icon: AppIcons.medication)
+                case .progress:
+                    ProgressView(quickAddState: $quickAddState)
                 }
             }
             
@@ -51,13 +73,15 @@ struct HomeView: View {
                 
                 Spacer()
                 
-                Button("Quick Add") {
-                    withAnimation(.easeInOut(duration: 0.3)) {
-                        toggleQuickAdd()
+                if selectedTab == .home {
+                    Button("Quick Add") {
+                        withAnimation(.easeInOut(duration: 0.3)) {
+                            toggleQuickAdd()
+                        }
                     }
+                    .primaryButtonStyle()
+                    .pressableStyle()
                 }
-                .primaryButtonStyle()
-                .pressableStyle()
             }
         }
         .headerContainerStyle()
@@ -93,8 +117,13 @@ struct HomeView: View {
                     removal: .move(edge: .leading).combined(with: .opacity)
                 ))
             
-        case .medicationForm:
-            placeholderFormView(title: "Creating Medication")
+        case .medicationForm(let editingMedication):
+            MedicationFormView(quickAddState: $quickAddState)
+                .id("medicationForm-\(editingMedication?.id.uuidString ?? "new")")
+                .transition(.asymmetric(
+                    insertion: .move(edge: .trailing).combined(with: .opacity),
+                    removal: .move(edge: .leading).combined(with: .opacity)
+                ))
         }
     }
     
@@ -155,23 +184,48 @@ struct HomeView: View {
         HStack {
             Spacer()
             
-            TabBarButton(title: "Home", systemImage: AppIcons.home)
+            TabBarButton(
+                title: "Home", 
+                systemImage: AppIcons.home,
+                isSelected: selectedTab == .home,
+                action: { selectedTab = .home }
+            )
             
             Spacer()
             
-            TabBarButton(title: "Habit", systemImage: AppIcons.habit)
+            TabBarButton(
+                title: "Habit", 
+                systemImage: AppIcons.habit,
+                isSelected: selectedTab == .habit,
+                action: { selectedTab = .habit }
+            )
             
             Spacer()
             
-            TabBarButton(title: "Task", systemImage: AppIcons.task)
+            TabBarButton(
+                title: "Task", 
+                systemImage: AppIcons.task,
+                isSelected: selectedTab == .task,
+                action: { selectedTab = .task }
+            )
             
             Spacer()
             
-            TabBarButton(title: "Medication", systemImage: AppIcons.medication)
+            TabBarButton(
+                title: "Medication", 
+                systemImage: AppIcons.medication,
+                isSelected: selectedTab == .medication,
+                action: { selectedTab = .medication }
+            )
             
             Spacer()
             
-            TabBarButton(title: "Progress", systemImage: AppIcons.progress)
+            TabBarButton(
+                title: "Progress", 
+                systemImage: AppIcons.progress,
+                isSelected: selectedTab == .progress,
+                action: { selectedTab = .progress }
+            )
             
             Spacer()
         }
@@ -217,6 +271,29 @@ struct HomeView: View {
         let formatter = DateFormatter()
         formatter.dateFormat = "EEEE, MMMM d, yyyy"
         return formatter.string(from: Date())
+    }
+    
+    // MARK: - Placeholder View
+    private func placeholderView(title: String, icon: String) -> some View {
+        VStack(spacing: AppSpacing.xl) {
+            Spacer()
+            
+            Image(systemName: icon)
+                .font(.system(size: 60))
+                .foregroundStyle(AppColors.tertiaryText)
+            
+            Text(title)
+                .sectionTitleStyle()
+                .foregroundStyle(AppColors.secondaryText)
+            
+            Text("Coming Soon")
+                .captionStyle()
+                .foregroundStyle(AppColors.tertiaryText)
+            
+            Spacer()
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .background(AppColors.background)
     }
 }
 

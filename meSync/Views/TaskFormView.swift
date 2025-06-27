@@ -122,7 +122,7 @@ struct TaskFormView: View {
         .background(AppColors.cardBackground)
         .overlay(
             Rectangle()
-                .frame(height: 1)
+                .frame(height: AppDimensions.dividerHeight)
                 .foregroundStyle(AppColors.secondaryText.opacity(0.2)),
             alignment: .bottom
         )
@@ -149,11 +149,11 @@ struct TaskFormView: View {
             
             TextEditor(text: $taskDescription)
                 .focused($isDescriptionFocused)
-                .frame(minHeight: 80)
+                .frame(minHeight: AppDimensions.minTextEditorHeight)
                 .padding(AppSpacing.sm)
-                .background(AppColors.cardBackground, in: RoundedRectangle(cornerRadius: 8))
+                .background(AppColors.cardBackground, in: RoundedRectangle(cornerRadius: AppSpacing.mediumCornerRadius))
                 .overlay(
-                    RoundedRectangle(cornerRadius: 8)
+                    RoundedRectangle(cornerRadius: AppSpacing.mediumCornerRadius)
                         .stroke(AppColors.secondaryText.opacity(0.3), lineWidth: 1)
                 )
         }
@@ -165,10 +165,16 @@ struct TaskFormView: View {
                 .captionStyle()
                 .foregroundStyle(AppColors.secondaryText)
             
-            DatePicker("Select date and time", 
-                      selection: $dueDate,
-                      displayedComponents: [.date, .hourAndMinute])
-                .datePickerStyle(.compact)
+            CompactDatePicker(
+                title: "Date",
+                date: $dueDate,
+                components: .date
+            )
+            
+            CompactTimePicker(
+                title: "Time",
+                time: $dueDate
+            )
         }
     }
     
@@ -188,13 +194,11 @@ struct TaskFormView: View {
     
     private func priorityButton(for priority: TaskPriority) -> some View {
         Button(action: {
-            withAnimation(.easeInOut(duration: 0.2)) {
-                selectedPriority = priority
-            }
+            selectedPriority = priority
         }) {
             HStack {
                 Image(systemName: selectedPriority == priority ? "checkmark.circle.fill" : "circle")
-                    .foregroundStyle(selectedPriority == priority ? priorityColor(for: priority) : AppColors.tertiaryText)
+                    .foregroundStyle(selectedPriority == priority ? AppColors.primary : AppColors.tertiaryText)
                 
                 Text(priority.rawValue)
                     .font(AppTypography.body)
@@ -202,53 +206,42 @@ struct TaskFormView: View {
                 
                 Spacer()
                 
-                Circle()
-                    .fill(priorityColor(for: priority))
-                    .frame(width: 12, height: 12)
+                Text("●")
+                    .foregroundStyle(priorityColor(for: priority))
+                    .font(AppTypography.caption)
             }
-            .padding(AppSpacing.md)
-            .background(
-                selectedPriority == priority ? priorityColor(for: priority).opacity(0.1) : AppColors.cardBackground,
-                in: RoundedRectangle(cornerRadius: AppSpacing.cardCornerRadius)
-            )
-            .overlay(
-                RoundedRectangle(cornerRadius: AppSpacing.cardCornerRadius)
-                    .stroke(
-                        selectedPriority == priority ? priorityColor(for: priority).opacity(0.3) : AppColors.secondaryText.opacity(0.2),
-                        lineWidth: 1
-                    )
-            )
+            .contentShape(Rectangle())
         }
-        .pressableStyle()
+        .buttonStyle(.plain)
+        .padding(.horizontal, AppSpacing.md)
+        .padding(.vertical, AppSpacing.sm)
     }
     
     private func priorityColor(for priority: TaskPriority) -> Color {
         switch priority {
-        case .low: return .green
-        case .medium: return .orange
-        case .high: return .red
-        case .urgent: return .purple
+        case .low: return AppColors.taskPriorityLow
+        case .medium: return AppColors.taskPriorityMedium
+        case .high: return AppColors.taskPriorityHigh
+        case .urgent: return AppColors.taskPriorityUrgent
         }
     }
     
     // MARK: - Delete Button
     private var deleteButton: some View {
         VStack(spacing: AppSpacing.sm) {
-            Button("Delete Task") {
+            Button("Delete Task", role: .destructive) {
                 deleteTask()
             }
+            .buttonStyle(.borderedProminent)
+            .controlSize(.large)
             .frame(maxWidth: .infinity)
-            .padding(.vertical, AppSpacing.md)
-            .background(Color.red.opacity(0.1), in: RoundedRectangle(cornerRadius: AppSpacing.cardCornerRadius))
-            .foregroundStyle(.red)
-            .pressableStyle()
         }
         .standardHorizontalPadding()
         .padding(.vertical, AppSpacing.lg)
         .background(AppColors.cardBackground)
         .overlay(
             Rectangle()
-                .frame(height: 1)
+                .frame(height: AppDimensions.dividerHeight)
                 .foregroundStyle(AppColors.secondaryText.opacity(0.2)),
             alignment: .top
         )

@@ -14,6 +14,10 @@ struct ContentView: View {
     var body: some View {
         HomeView(quickAddState: $quickAddState)
             .environmentObject(dataManager)
+            .onAppear {
+                // Load data when app appears
+                dataManager.loadAllData()
+            }
     }
 }
 
@@ -45,10 +49,12 @@ struct QuickAddButton: View {
 struct TabBarButton: View {
     let title: String
     let systemImage: String
+    var isSelected: Bool = false
+    var action: (() -> Void)? = nil
     
     var body: some View {
         Button {
-            // Acción del botón
+            action?()
         } label: {
             VStack(spacing: AppSpacing.xs) {
                 Image(systemName: systemImage)
@@ -57,8 +63,8 @@ struct TabBarButton: View {
                 Text(title)
                     .font(AppTypography.caption2)
             }
+            .foregroundStyle(isSelected ? AppColors.primary : AppColors.secondaryText)
         }
-        .tabBarButtonStyle()
         .pressableStyle()
     }
 }
